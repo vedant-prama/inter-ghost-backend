@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Demo Website - OAuth2</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin-top: 50px;
+            background-color: #f0f0f0;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            border: none;
+            border-radius: 5px;
+            background-color: #4285f4;
+            color: white;
+            margin: 10px;
+        }
+        button:hover {
+            background-color: #3267d6;
+        }
+        .logout-btn {
+            background-color: #dc3545;
+        }
+        .logout-btn:hover {
+            background-color: #c82333;
+        }
+        #userInfo {
+            margin-top: 20px;
+            font-size: 18px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Demo Website with OAuth2</h1>
+        <div id="loginSection">
+            <button onclick="login()">Login with Google</button>
+        </div>
+        <div id="userInfo" style="display: none;">
+            <p><strong>Name:</strong> <span id="userName"></span></p>
+            <p><strong>Email:</strong> <span id="userEmail"></span></p>
+            <button class="logout-btn" onclick="logout()">Logout</button>
+        </div>
+    </div>
+
+    <script>
+        // Check if user is authenticated
+        async function checkUser() {
+            try {
+                const response = await fetch('/user');
+                if (response.ok) {
+                    const user = await response.json();
+                    document.getElementById('loginSection').style.display = 'none';
+                    document.getElementById('userInfo').style.display = 'block';
+                    document.getElementById('userName').textContent = user.displayName;
+                    document.getElementById('userEmail').textContent = user.email;
+                } else {
+                    document.getElementById('loginSection').style.display = 'block';
+                    document.getElementById('userInfo').style.display = 'none';
+                }
+            } catch (error) {
+                console.error('Error checking user:', error);
+            }
+        }
+
+        // Start the OAuth2 login flow with prompt=select_account to force new authentication
+        function login() {
+            window.location.href = '/auth/google?prompt=select_account';
+        }
+
+        // Logout
+        function logout() {
+            window.location.href = '/logout';
+        }
+
+        // Check user status on page load
+        window.onload = function() {
+            checkUser();
+
+            // Fallback: If the page doesn't redirect within 30 seconds, go back to homepage
+            setTimeout(() => {
+                if (window.location.pathname !== '/') {
+                    console.log('OAuth2 redirect timeout, redirecting to homepage');
+                    window.location.href = '/';
+                }
+            }, 30000);
+        };
+    </script>
+</body>
+</html>
